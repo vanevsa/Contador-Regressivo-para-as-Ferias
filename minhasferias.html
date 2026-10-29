@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contador Regressivo para as Férias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --green: #10b981;
+      --green-light: #34d399;
+      --amber: #f59e0b;
+      --amber-light: #fbbf24;
+      --rose: #f43f5e;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #a5b4fc 0%, #ffffff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .settings-grid {
+        grid-template-columns: 1.5fr 1fr;
+      }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="date"], input[type="text"] {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="date"]:focus, input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .metric-card {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 20px;
+      padding: 24px;
+      transition: transform 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .metric-card.calendar {
+      background: linear-gradient(145deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.8) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .metric-card.school {
+      background: linear-gradient(145deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.8) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .metric-card.teaching {
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, rgba(30, 41, 59, 0.8) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .metric-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .calendar .metric-title { color: var(--primary-light); }
+    .school .metric-title { color: var(--amber-light); }
+    .teaching .metric-title { color: var(--green-light); }
+
+    .metric-value {
+      font-size: 3.25rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 12px 0 6px 0;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 12px;
+      width: fit-content;
+    }
+
+    .calendar .badge { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
+    .school .badge { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .teaching .badge { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
+
+    .quote-box {
+      background: rgba(15, 23, 42, 0.5);
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quote-icon {
+      font-size: 1.4rem;
+    }
+
+    .holidays-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .holiday-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .holiday-input-row input {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .holiday-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .holiday-tag {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #fca5a5;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .holiday-tag button {
+      background: none;
+      border: none;
+      color: #fca5a5;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .schedule-filters {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--surface-hover);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .day-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .day-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .day-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 12px;
+      border-left: 4px solid transparent;
+      font-size: 0.9rem;
+    }
+
+    .day-row.teaching {
+      border-left-color: var(--green);
+    }
+
+    .day-row.school-only {
+      border-left-color: var(--amber);
+    }
+
+    .day-row.holiday {
+      border-left-color: var(--rose);
+      opacity: 0.6;
+    }
+
+    .day-row.off {
+      border-left-color: #475569;
+      opacity: 0.5;
+    }
+
+    .day-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .day-date {
+      font-weight: 600;
+      min-width: 110px;
+    }
+
+    .day-type {
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .day-status-pill {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .pill-teaching { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .pill-school { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .pill-holiday { background: rgba(244, 63, 94, 0.2); color: #fda4af; }
+    .pill-off { background: rgba(100, 116, 139, 0.2); color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Contador para as Férias 🌴</h1>
+      <p>Acompanhe os dias corridos, presença na escola e aulas em sala</p>
+    </header>
+
+    <div class="card">
+      <div class="settings-grid">
+        <div class="input-group">
+          <label for="vacation-date">Primeiro dia das férias:</label>
+          <input type="date" id="vacation-date">
+        </div>
+        <div class="input-group" style="justify-content: flex-end;">
+          <button class="btn" id="btn-save">Atualizar Contagem</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-box" id="quote-container">
+      <span class="quote-icon">☕</span>
+      <span id="quote-text">Cada aula dada é um passo a menos para o descanso merecido!</span>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card calendar">
+        <div>
+          <div class="metric-title">Dias Corridos</div>
+          <div class="metric-value" id="val-calendar">0</div>
+          <div class="metric-subtitle">Contagem total até as férias</div>
+        </div>
+        <div class="badge">Todos os dias</div>
+      </div>
+
+      <div class="metric-card school">
+        <div>
+          <div class="metric-title">Estar na Escola</div>
+          <div class="metric-value" id="val-school">0</div>
+          <div class="metric-subtitle">Terças, quartas e quintas</div>
+        </div>
+        <div class="badge">Presença Obrigatória</div>
+      </div>
+
+      <div class="metric-card teaching">
+        <div>
+          <div class="metric-title">Dias de Aula</div>
+          <div class="metric-value" id="val-teaching">0</div>
+          <div class="metric-subtitle">Apenas terças e quartas</div>
+        </div>
+        <div class="badge">Em Sala com Alunos</div>
+      </div>
+    </div>
+
+    <div class="card holidays-section">
+      <h3 style="font-size: 1rem; font-weight: 700;">Feriados / Pontes / Recessos</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Adicione feriados que caem no período. Se coincidirem com terças, quartas ou quintas, serão descontados.
+      </p>
+      
+      <div class="holiday-input-row">
+        <input type="date" id="holiday-date">
+        <input type="text" id="holiday-name" placeholder="Nome do feriado (opcional)">
+        <button class="btn" id="btn-add-holiday" style="padding: 0 16px;">Adicionar</button>
+      </div>
+
+      <div class="holiday-tags" id="holiday-tags"></div>
+    </div>
+
+    <div class="card">
+      <div class="schedule-header">
+        <h3 style="font-size: 1rem; font-weight: 700;">Próximos Dias</h3>
+        <div class="schedule-filters">
+          <button class="filter-btn active" data-filter="all">Todos</button>
+          <button class="filter-btn" data-filter="school">Na Escola</button>
+          <button class="filter-btn" data-filter="teaching">Apenas Aulas</button>
+        </div>
+      </div>
+
+      <div class="day-list" id="day-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_DATE = 'vacation_target_date';
+    const STORAGE_KEY_HOLIDAYS = 'vacation_holidays';
+
+    const quotes = [
+      "Cada aula dada é um passo a mais rumo ao descanso merecido!",
+      "Respira fundo: o cheiro das férias já está no ar 🌊",
+      "Quinta-feira na escola sem dar aula já é quase meio descanso!",
+      "Mantenha o foco, o final do período letivo está logo ali.",
+      "Você já superou a maior parte do caminho. Reta final!"
+    ];
+
+    let targetDateStr = localStorage.getItem(STORAGE_KEY_DATE) || '';
+    let holidays = JSON.parse(localStorage.getItem(STORAGE_KEY_HOLIDAYS) || '[]');
+    let currentFilter = 'all';
+
+    const inputDate = document.getElementById('vacation-date');
+    const inputHolidayDate = document.getElementById('holiday-date');
+    const inputHolidayName = document.getElementById('holiday-name');
+    const btnSave = document.getElementById('btn-save');
+    const btnAddHoliday = document.getElementById('btn-add-holiday');
+    const holidayTagsContainer = document.getElementById('holiday-tags');
+    const dayListContainer = document.getElementById('day-list');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    const valCalendar = document.getElementById('val-calendar');
+    const valSchool = document.getElementById('val-school');
+    const valTeaching = document.getElementById('val-teaching');
+    const quoteText = document.getElementById('quote-text');
+
+    quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    if (!targetDateStr) {
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 45);
+      targetDateStr = defaultDate.toISOString().split('T')[0];
+    }
+    inputDate.value = targetDateStr;
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY_DATE, targetDateStr);
+      localStorage.setItem(STORAGE_KEY_HOLIDAYS, JSON.stringify(holidays));
+    }
+
+    function renderHolidays() {
+      holidayTagsContainer.innerHTML = '';
+      holidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      holidays.forEach((h, index) => {
+        const tag = document.createElement('div');
+        tag.className = 'holiday-tag';
+        const [year, month, day] = h.date.split('-');
+        tag.innerHTML = `
+          <span>${day}/${month} - ${h.name || 'Feriado'}</span>
+          <button data-index="${index}" title="Remover">&times;</button>
+        `;
+        tag.querySelector('button').addEventListener('click', () => {
+          holidays.splice(index, 1);
+          saveState();
+          renderHolidays();
+          calculateMetrics();
+        });
+        holidayTagsContainer.appendChild(tag);
+      });
+    }
+
+    function calculateMetrics() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [y, m, d] = targetDateStr.split('-').map(Number);
+      const target = new Date(y, m - 1, d);
+      target.setHours(0, 0, 0, 0);
+
+      if (target <= today) {
+        valCalendar.textContent = '0';
+        valSchool.textContent = '0';
+        valTeaching.textContent = '0';
+        dayListContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">As férias já começaram ou a data selecionada já passou! 🎉</div>';
+        return;
+      }
+
+      let totalDays = 0;
+      let schoolDays = 0;
+      let teachingDays = 0;
+      let dayList = [];
+
+      const holidayMap = new Map();
+      holidays.forEach(h => holidayMap.set(h.date, h.name || 'Feriado'));
+
+      let cur = new Date(today);
+      cur.setDate(cur.getDate() + 1);
+
+      const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+      while (cur < target) {
+        totalDays++;
+        const dayOfWeek = cur.getDay();
+        const dateStr = cur.toISOString().split('T')[0];
+        const isHoliday = holidayMap.has(dateStr);
+        const holidayDesc = holidayMap.get(dateStr);
+
+        let type = 'off';
+        let statusPill = 'Folga';
+        let pillClass = 'pill-off';
+
+        if (isHoliday) {
+          type = 'holiday';
+          statusPill = holidayDesc || 'Feriado';
+          pillClass = 'pill-holiday';
+        } else if (dayOfWeek === 2 || dayOfWeek === 3) {
+          type = 'teaching';
+          statusPill = 'Aula em sala';
+          pillClass = 'pill-teaching';
+          teachingDays++;
+          schoolDays++;
+        } else if (dayOfWeek === 4) {
+          type = 'school-only';
+          statusPill = 'Permanência';
+          pillClass = 'pill-school';
+          schoolDays++;
+        }
+
+        const [currY, currM, currD] = dateStr.split('-');
+        dayList.push({
+          dateStr: `${currD}/${currM}`,
+          dayName: dayNames[dayOfWeek],
+          type,
+          statusPill,
+          pillClass
+        });
+
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      valCalendar.textContent = totalDays;
+      valSchool.textContent = schoolDays;
+      valTeaching.textContent = teachingDays;
+
+      renderSchedule(dayList);
+    }
+
+    function renderSchedule(days) {
+      dayListContainer.innerHTML = '';
+
+      let filtered = days;
+      if (currentFilter === 'school') {
+        filtered = days.filter(d => d.type === 'teaching' || d.type === 'school-only');
+      } else if (currentFilter === 'teaching') {
+        filtered = days.filter(d => d.type === 'teaching');
+      }
+
+      if (filtered.length === 0) {
+        dayListContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dia corresponde ao filtro selecionado.</div>';
+        return;
+      }
+
+      filtered.forEach(d => {
+        const row = document.createElement('div');
+        row.className = `day-row ${d.type}`;
+        row.innerHTML = `
+          <div class="day-info">
+            <span class="day-date">${d.dateStr} (${d.dayName})</span>
+          </div>
+          <span class="day-status-pill ${d.pillClass}">${d.statusPill}</span>
+        `;
+        dayListContainer.appendChild(row);
+      });
+    }
+
+    btnSave.addEventListener('click', () => {
+      if (inputDate.value) {
+        targetDateStr = inputDate.value;
+        saveState();
+        calculateMetrics();
+      }
+    });
+
+    btnAddHoliday.addEventListener('click', () => {
+      const dateVal = inputHolidayDate.value;
+      const nameVal = inputHolidayName.value.trim();
+
+      if (dateVal) {
+        if (!holidays.some(h => h.date === dateVal)) {
+          holidays.push({ date: dateVal, name: nameVal });
+          saveState();
+          renderHolidays();
+          calculateMetrics();
+          inputHolidayDate.value = '';
+          inputHolidayName.value = '';
+        }
+      }
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        calculateMetrics();
+      });
+    });
+
+    renderHolidays();
+    calculateMetrics();
+  </script>
+</body>
+</html>
